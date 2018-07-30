@@ -1,0 +1,59 @@
+## python中requests库session对象的妙用详解
+
+在进行接口测试的时候，我们会调用多个接口发出多个请求，在这些请求中有时候需要保持一些共用的数据，例如cookies信息。
+
+**妙用1**
+
+requests库的session对象能够帮我们跨请求保持某些参数，也会在同一个session实例发出的所有请求之间保持cookies。
+举个栗子，跨请求保持cookies，在命令行上输入下面命令：
+
+```
+# 创建一个session对象 
+s = requests.Session() 
+# 用session对象发出get请求，设置cookies 
+s.get('http://httpbin.org/cookies/set/sessioncookie/123456789') 
+# 用session对象发出另外一个get请求，获取cookies 
+r = s.get("http://httpbin.org/cookies") 
+# 显示结果 
+r.text 
+ '{"cookies": {"sessioncookie": "123456789"}}' 
+```
+
+**妙用2**
+
+requests库的session对象还能为我们提供请求方法的缺省数据，通过设置session对象的属性来实现。
+
+举个栗子，设置请求的auth和headers默认的缺省参数：
+
+```
+# 创建一个session对象 
+s = requests.Session() 
+# 设置session对象的auth属性，用来作为请求的默认参数 
+s.auth = ('user', 'pass') 
+# 设置session的headers属性，通过update方法，将其余请求方法中的headers属性合并起来作为最终的请求方法的headers 
+s.headers.update({'x-test': 'true'}) 
+# 发送请求，这里没有设置auth会默认使用session对象的auth属性，这里的headers属性会与session对象的headers属性合并 
+r = s.get('http://httpbin.org/headers', headers={'x-test2': 'true'}) 
+# 查看发送请求的请求头 
+r.request.headers 
+```
+
+得到的请求头部是这样的：
+
+**{'Authorization': 'Basic dXNlcjpwYXNz', 'x-test': 'false'}**
+
+**注意1：方法层的参数覆盖会话的参数，举个栗子：**
+
+将上面的请求中加上auth参数：
+
+```
+r = s.get('http://httpbin.org/headers', auth=('user','hah'), headers={'x-test2': 'true'}) 
+```
+
+**获取该请求的请求头**
+
+**{'Authorization': 'Basic dXNlcjpoYWg=', 'x-test': 'false'}**
+
+**我们发现，请求方法中的Authorization变化了，也就是说方法层的参数覆盖了session的属性。**
+
+**注意2：在request请求中，省略session对象中设置的属性，只需简单地在方法层参数中将那个键的值设置为 None ，那个键就会被自动省略掉。**
