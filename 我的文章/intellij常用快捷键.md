@@ -30,6 +30,5 @@ System.out.print(); 键入：sout
 Ctrl+Shift+ v，可以选择剪贴板内容并插入
 
 Ctrl+Alt+V，可以自动引入变量。例如：new String(); 自动导入变量定义和名字
-=======
 **单元测试**：**Ctrl+Alt+T**创建单元测试用例
->>>>>>> 19332ed1263b9f7bcbb77041829271b63657b2e8
+Ctrl + insert: 选中光标所在的一行
